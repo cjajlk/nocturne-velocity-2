@@ -1,4 +1,31 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';import {createHash} from 'node:crypto';import {createRun,update,nova} from '../src/combat.js';import {AUDIO_FILES} from '../src/audio-manifest.js';import {ASSETS} from '../src/content.js';import {DIFFICULTIES} from '../src/difficulty.js';import {load,save,SAVE_KEY} from '../src/storage.js';
+import {createEnemy,bossPattern,spawnWaves,updateEnemies} from '../src/enemies.js';
+import {setBounds} from '../src/combat.js';
 test('Release : 21 graphismes, 39 WAV et leurs empreintes',async()=>{assert.equal(Object.keys(ASSETS).length,21);for(const asset of Object.values(ASSETS))await readFile(new URL('../'+asset,import.meta.url));const manifest=JSON.parse(await readFile(new URL('../assets/audio/provenance.json',import.meta.url)));assert.equal(Object.values(AUDIO_FILES).flat().length,39);for(const audio of manifest.variants){const bytes=await readFile(new URL('../'+audio.file,import.meta.url));assert.equal(bytes.toString('ascii',0,4),'RIFF');assert.equal(createHash('sha256').update(bytes).digest('hex'),audio.sha256);}});
 test('Release : chaque difficulté conserve NOVA à zéro et le budget de projectiles',()=>{for(const difficulty of Object.keys(DIFFICULTIES)){const s=createRun({ship:'bastion',weapon:'missile',drone:'alpha',difficulty});assert.equal(s.novaCharge,0);assert.equal(nova(s),false);for(let i=0;i<20*120;i++)update(s,1/120);assert.ok(s.hostile.length<=100);assert.ok(s.bullets.length<=160);}});
 test('Release : stockage isolé, erreurs de stockage tolérées',()=>{const calls=[],store={getItem(k){calls.push(k);return null;},setItem(k){calls.push(k);}};save(store,load(store));assert.deepEqual(calls,[SAVE_KEY,SAVE_KEY]);assert.equal(SAVE_KEY,'nv2_save_v1');assert.equal(save(null,{}),false);});
+test('2.2 : pression progressive sans augmentation des effectifs ni des points de vie',()=>{
+ for(const difficulty of ['easy','normal','hard']){const s=createRun({ship:'revenant',weapon:'flux',drone:'none',difficulty});s.t=34;spawnWaves(s);assert.equal(s.enemies.length,18);assert.equal(s.enemies.filter(e=>e.type==='fighter').length,9);assert.equal(s.enemies.filter(e=>e.type==='interceptor').length,6);assert.equal(s.enemies.filter(e=>e.type==='heavy').length,3);s.t=35;spawnWaves(s);assert.equal(s.bossSpawned,difficulty!=='easy');assert.equal(s.hp,100);if(s.bossSpawned)assert.equal(s.enemies.find(e=>e.boss).hp,360);}
+});
+test('2.2 : trois phases, alternance ciblage/barrages, cadence croissante',()=>{
+ assert.deepEqual([...new Set(Array.from({length:10},(_,i)=>bossPattern(1,i)))],['fan']);
+ for(const phase of [2,3])assert.deepEqual(new Set(Array.from({length:10},(_,i)=>bossPattern(phase,i))),new Set(['fan','split','columns']));
+ for(const difficulty of ['normal','hard']){const waits=[];for(const phase of [1,2,3]){const s=createRun({ship:'revenant',weapon:'flux',drone:'none',difficulty});s.y=650;const e=createEnemy(s,'spectra',{age:4,y:145,hp:[360,200,80][phase-1],phase,cooldown:0});s.enemies.push(e);for(let i=0;i<300&&!s.stats.volleys;i++)updateEnemies(s,1/120);assert.equal(s.stats.volleys,1);waits.push(e.cooldown);assert.ok(s.hostile.every(b=>b.telegraphed&&b.arm>=.12));}assert.ok(waits[0]>waits[1]&&waits[1]>waits[2]);}
+});
+test('2.2 : cible figée, avertissement majeur et aucune création au contact',()=>{
+ for(const difficulty of ['easy','normal','hard']){const s=createRun({ship:'bastion',weapon:'flux',drone:'none',difficulty});s.y=650;const e=createEnemy(s,'spectra',{age:4,y:145,cooldown:0});s.enemies.push(e);updateEnemies(s,1/120);const w=structuredClone(e.warning);assert.ok(w.duration>=.65);s.x=40;updateEnemies(s,1/120);assert.equal(e.warning.angle,w.angle);assert.equal(e.warning.aimX,w.aimX);s.x=e.x;s.y=e.y+e.r;for(let i=0;i<180;i++)updateEnemies(s,1/120);assert.equal(s.hostile.length,0);}
+});
+test('2.2 : déplacements variés, formations espacées et transitions du boss continues',()=>{
+ const s=createRun({ship:'bastion',weapon:'flux',drone:'none',difficulty:'normal'});s.t=1;spawnWaves(s);updateEnemies(s,1/120);assert.equal(s.enemies[1].x-s.enemies[0].x,68);const e=createEnemy(s,'spectra',{age:8,y:145,cooldown:1000});s.enemies=[e];for(const hp of [360,200,80]){e.hp=hp;const x=e.x;updateEnemies(s,1/120);assert.ok(Math.abs(e.x-x)<=145/120+1e-9);}const directions=new Set();const f=createEnemy(s,'fighter',{age:4,group:0,slot:0,center:240,x:240,y:200,cooldown:1000});s.enemies=[f];for(let i=0;i<300;i++){const x=f.x;updateEnemies(s,1/120);directions.add(Math.sign(f.x-x));}assert.ok(directions.has(-1)&&directions.has(1));
+});
+test('2.2 : le dernier lourd peut terminer son annonce avant SPECTRA',()=>{const s=createRun({ship:'bastion',weapon:'flux',drone:'none',difficulty:'normal'});s.y=650;s.waveIndex=8;s.t=29.5;spawnWaves(s);const heavy=s.enemies[0];for(let i=0;i<5.45*120;i++){s.t+=1/120;spawnWaves(s);updateEnemies(s,1/120);}assert.equal(s.bossSpawned,false);assert.ok(s.hostile.some(b=>b.source===heavy.id));});
+test('2.2 : une route sans dégâts pour chaque attaque majeure, format, difficulté et châssis',()=>{
+ // Recherche discrète de routes avec 150 ms de réaction après le signal lumineux.
+ // Cas isolés, sans invulnérabilité : ceci ne prouve pas tous les chevauchements possibles.
+ for(const [width,height] of [[1152,720],[480,1066.667],[480,1038.769],[909,420]])for(const ship of ['revenant','wisp','bastion'])for(const difficulty of ['easy','normal','hard'])for(const phase of [1,2,3])for(const index of phase===1?[0]:[0,1,2]){
+  let escaped=false;
+  for(const dx of [-1,1,0]){const s=createRun({ship,weapon:'flux',drone:'none',difficulty});setBounds(s,width,height);s.waveIndex=9;s.bossSpawned=true;s.shot=1000;s.x=width/2;s.y=height*.85;const e=createEnemy(s,'spectra',{age:4,y:145,hp:[360,200,80][phase-1],phase,cooldown:0,attackIndex:index});s.enemies.push(e);let visibleAt=null;
+   for(let i=0;i<6*120;i++){if(e.warning&&(difficulty==='easy'||e.warning.time<=.3)&&visibleAt===null)visibleAt=s.t;if(s.stats.volleys)e.cooldown=1000;update(s,1/120,{dx:visibleAt!==null&&s.t-visibleAt>=.15?dx:0});}if(s.stats.volleys===1&&s.stats.damageTaken===0){escaped=true;break;}
+  }assert.ok(escaped,`${width}x${height} ${ship} ${difficulty} phase${phase} index${index}`);
+ }
+});
