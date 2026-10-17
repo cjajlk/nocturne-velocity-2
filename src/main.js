@@ -17,7 +17,7 @@ function toggle(){if(!run||run.over)return;paused=!paused;resetInput();if(paused
 function active(){return !!run&&!paused&&!run.over&&!document.hidden&&document.hasFocus();}
 function cycle(){if(active()&&cycleWeapon(run))audio.play('confirm',{ui:true,gain:.5});}
 $('cycle').onclick=cycle;$('pause').onclick=toggle;$('nova').onclick=()=>{if(active())nova(run);};
-window.addEventListener('keydown',e=>{if(!run)return;const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();if(e.repeat)return;if(k==='p'||k==='escape')toggle();else if(k==='n'){if(active())nova(run);}else if(k==='c')cycle();else{keys.add(k);target=null;}});
+window.addEventListener('keydown',e=>{if(!run||e.target.closest?.('input,select,textarea,[contenteditable]'))return;const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();if(e.repeat)return;if(k==='p'||k==='escape')toggle();else if(k==='n'){if(active())nova(run);}else if(k==='c')cycle();else{keys.add(k);target=null;}});
 window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
 function aim(e){target=pointer(e.clientX,e.clientY,canvas.getBoundingClientRect());if(e.pointerType!=='mouse')target.y=Math.max(run?.spec.size||50,target.y-60);}
 canvas.addEventListener('pointerdown',e=>{if(activePointer!==null||!active())return;activePointer=e.pointerId;canvas.setPointerCapture(e.pointerId);aim(e);});
