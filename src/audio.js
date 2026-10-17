@@ -1,0 +1,24 @@
+import {AUDIO_FILES} from './audio-manifest.js';
+const MAP={shot_plasma:'plasma',shot_spread:'spread',shot_missile:'missile',shot_drone:'plasma',armor_hit:'armor',shield_hit:'shield',explosion_small:'explosion_small',explosion_medium:'explosion_medium',explosion_large:'explosion_large',enemy_fire:'plasma',spectra_fire:'spectra_fire',spectra_phase:'spectra_phase',spectra_final:'spectra_final',nova:'nova',ready:'ready',confirm:'confirm',pause:'pause',victory:'victory'};
+const PRIORITY={spectra_final:10,victory:10,nova:9,shield_hit:7,spectra_phase:7,explosion_large:6,ready:6,armor_hit:4,explosion_medium:4,explosion_small:3,shot_missile:2};
+export function createAudioManager(initial,environment={}){
+ const makeContext=environment.makeContext||(()=>new(window.AudioContext||window.webkitAudioContext)());const request=environment.fetch||globalThis.fetch;
+ let context=null,master=null,compressor=null,loading=null,enabled=initial.enabled,volume=initial.volume,paused=false,unlocked=false;const buffers=new Map(),voices=new Set(),last=new Map(),variants=new Map(),failed=[];let played=0,dropped=0,peakVoices=0;
+ function stopAll(){for(const voice of [...voices]){try{voice.source.stop();}catch{}try{voice.source.disconnect();voice.gain.disconnect();voice.pan?.disconnect();}catch{}voices.delete(voice);}last.clear();}
+ function prepare(){if(context)return;context=makeContext();master=context.createGain();master.gain.value=volume;compressor=context.createDynamicsCompressor();compressor.threshold.value=-14;compressor.knee.value=12;compressor.ratio.value=4;compressor.attack.value=.003;compressor.release.value=.15;master.connect(compressor);compressor.connect(context.destination);}
+ async function load(){if(loading)return loading;const files=Object.values(AUDIO_FILES).flat();let cursor=0;loading=Promise.all(Array.from({length:4},async()=>{while(cursor<files.length){const file=files[cursor++],controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);try{const response=await request(file,{signal:controller.signal});if(!response.ok)throw Error('HTTP '+response.status);buffers.set(file,await context.decodeAudioData(await response.arrayBuffer()));}catch{failed.push(file);}finally{clearTimeout(timer);}}}));return loading;}
+ async function unlock(){try{prepare();const resume=context.resume();await Promise.all([resume,load()]);unlocked=context.state==='running';return unlocked;}catch{return false;}}
+ function play(type,{x=.5,gain=1,ui=false}={}){
+  if(!enabled||volume<=0||!unlocked||!context||context.state!=='running'||(paused&&!ui))return false;
+  const group=MAP[type],files=AUDIO_FILES[group];if(!files)return false;
+  const now=context.currentTime,interval=type==='armor_hit'?.075:type==='enemy_fire'?.13:type==='shot_drone'?.17:.055;
+  if(now-(last.get(type)??-Infinity)<interval){dropped++;return false;}
+  const priority=PRIORITY[type]||1;if(voices.size>=12){const weakest=[...voices].sort((a,b)=>a.priority-b.priority||a.started-b.started)[0];if(weakest.priority>priority){dropped++;return false;}try{weakest.source.stop();}catch{}weakest.source.disconnect();weakest.gain.disconnect();weakest.pan?.disconnect();voices.delete(weakest);}
+  const index=(variants.get(group)||0)%files.length,file=files[index],buffer=buffers.get(file);if(!buffer)return false;variants.set(group,index+1);last.set(type,now);
+  const source=context.createBufferSource(),node=context.createGain();source.buffer=buffer;source.playbackRate.value=type==='enemy_fire'?.78:type==='shot_drone'?1.12:1;
+  const base=type.startsWith('shot_')?.27:type==='enemy_fire'?.16:group==='armor'?.32:type==='spectra_fire'?.4:.6;
+  node.gain.value=base*gain;source.connect(node);const pan=context.createStereoPanner?.();if(pan){pan.pan.value=Math.max(-.7,Math.min(.7,(x-.5)*1.4));node.connect(pan);pan.connect(master);}else node.connect(master);
+  const voice={source,gain:node,pan,priority,started:now};voices.add(voice);source.onended=()=>{voices.delete(voice);source.disconnect();node.disconnect();pan?.disconnect();};source.start();played++;peakVoices=Math.max(peakVoices,voices.size);return true;
+ }
+ return {unlock,play,consume(events,width){for(const event of events)play(event.type,{x:event.x/width,gain:event.gain??1});},setEnabled(value){enabled=!!value;if(!enabled)stopAll();},setVolume(value){volume=Math.max(0,Math.min(1,value));if(master)master.gain.setTargetAtTime(volume,context.currentTime,.025);if(volume===0)stopAll();},pause(){paused=true;stopAll();play('pause',{ui:true});},resume(){paused=false;return enabled?unlock():Promise.resolve(true);},suspend(){paused=true;stopAll();context?.suspend().catch(()=>{});},stop(){stopAll();paused=false;},diagnostics(){return {enabled,volume,paused,unlocked,state:context?.state||'locked',loaded:buffers.size,expected:Object.values(AUDIO_FILES).flat().length,failed:[...failed],activeVoices:voices.size,peakVoices,played,dropped};}};
+}

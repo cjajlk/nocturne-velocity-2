@@ -1,0 +1,7 @@
+Nocturne Velocity II — Démo mobile
+© 2026 CJajlkGames. Tous droits réservés pour le code, l’identité du jeu et ses graphismes.
+La publication de cette démo ne leur attribue pas automatiquement une licence open source.
+
+Exception : les fichiers audio sous assets/audio/ sont distribués sous CC0 1.0 Universal.
+Sources : Kenney, NenadSimic, bart. Assemblages et transformations détaillés dans
+assets/audio/provenance.json. Voir assets/audio/LICENSE.txt et les justificatifs inclus.

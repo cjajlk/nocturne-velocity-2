@@ -1,0 +1,739 @@
+{
+  "sources": [
+    {
+      "author": "Kenney",
+      "pack": "Sci-fi Sounds",
+      "page": "https://kenney.nl/assets/sci-fi-sounds",
+      "download": "https://kenney.nl/media/pages/assets/sci-fi-sounds/6b296f9ecf-1677589334/kenney_sci-fi-sounds.zip",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "archiveSha256": "119340f351a5098ad814f78719438c0da355a9ce8a4c8a3af6a8d48aa3d49e04"
+    },
+    {
+      "author": "NenadSimic",
+      "pack": "Muffled Distant Explosion",
+      "page": "https://opengameart.org/content/muffled-distant-explosion",
+      "download": "https://opengameart.org/sites/default/files/NenadSimic%20-%20Muffled%20Distant%20Explosion.wav",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "13a0bf75af94ec6d332bc71cba489b573466e05c4b17288158b3d683b41de39f"
+    },
+    {
+      "author": "bart",
+      "pack": "Space Laser",
+      "page": "https://opengameart.org/content/space-laser",
+      "download": "https://opengameart.org/sites/default/files/space%20laser.wav",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "3a26ecab8f36dca14a91519657e60351566a268d28a2ec4f933b0f9718a7258d"
+    }
+  ],
+  "notUsed": "Le pack rubberduck a été examiné mais aucun de ses sons n’est utilisé. Runway non connecté ; aucune génération par IA audio revendiquée.",
+  "qualityStatus": "fichiers mixés pour la démo, contrôlés numériquement et décodés en navigateur ; rendu sonore sur téléphone physique à vérifier",
+  "variants": [
+    {
+      "id": "plasma",
+      "variant": 1,
+      "file": "assets/audio/plasma-1.wav",
+      "duration": 0.48,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.77,
+      "rms": 0.15663,
+      "bytes": 30764,
+      "sha256": "ef56d3a3f0a4923488eca59ce619c25a27505f66340d3561f5a3d1597a889abd",
+      "sources": [
+        "laserLarge_000",
+        "thrusterFire_000",
+        "impactMetal_000"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "spread",
+      "variant": 1,
+      "file": "assets/audio/spread-1.wav",
+      "duration": 0.52,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.76,
+      "rms": 0.11283,
+      "bytes": 33324,
+      "sha256": "37a5c413663db8ad3a94bff940cf6c5b6579e03c7ed616fdb09c65372a32fa77",
+      "sources": [
+        "laserSmall_000",
+        "laserSmall_001",
+        "laserSmall_002",
+        "doorClose_000"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "missile",
+      "variant": 1,
+      "file": "assets/audio/missile-1.wav",
+      "duration": 1.1,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.78,
+      "rms": 0.2164,
+      "bytes": 70444,
+      "sha256": "1d29ec70343fd8a06405b44cb4a85db5b2a9d75da84ccfd52d11e2bfeda4a13c",
+      "sources": [
+        "doorClose_000",
+        "thrusterFire_000",
+        "spaceEngineSmall_000"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "shield",
+      "variant": 1,
+      "file": "assets/audio/shield-1.wav",
+      "duration": 0.55,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.7,
+      "rms": 0.2995,
+      "bytes": 35244,
+      "sha256": "6055e4239d20bf388c2adf32d7ead453750c9395e0d10c8c64d267b05f373f32",
+      "sources": [
+        "forceField_000",
+        "impactMetal_000"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "armor",
+      "variant": 1,
+      "file": "assets/audio/armor-1.wav",
+      "duration": 0.45,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.57779,
+      "rms": 0.09268,
+      "bytes": 28844,
+      "sha256": "25794c3d53dc1c6028b96917c8dc4c4340f440a26eb93599adae51f19d4f6506",
+      "sources": [
+        "impactMetal_000",
+        "explosionCrunch_000"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "explosion_small",
+      "variant": 1,
+      "file": "assets/audio/explosion_small-1.wav",
+      "duration": 0.9,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.79,
+      "rms": 0.15414,
+      "bytes": 57644,
+      "sha256": "f861acf9c8027353c0052dfd05ed53d915a78813f12d255d3461555a0c95e5a1",
+      "sources": [
+        "explosionCrunch_000",
+        "distant"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "explosion_medium",
+      "variant": 1,
+      "file": "assets/audio/explosion_medium-1.wav",
+      "duration": 1.4,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.81,
+      "rms": 0.14504,
+      "bytes": 89644,
+      "sha256": "a7e51255f46aef8b47f791d587d9597ecacf86c84553d4a437c3db81caa6de5f",
+      "sources": [
+        "explosionCrunch_000",
+        "lowFrequency_explosion_000",
+        "impactMetal_000"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "explosion_large",
+      "variant": 1,
+      "file": "assets/audio/explosion_large-1.wav",
+      "duration": 2,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.84,
+      "rms": 0.16057,
+      "bytes": 128044,
+      "sha256": "0fbcdf2f52ecfebe2c5e55fcf9b90d2489c84361a2a703400f28d5929aaa4ad1",
+      "sources": [
+        "lowFrequency_explosion_000",
+        "explosionCrunch_000",
+        "distant",
+        "impactMetal_000"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "plasma",
+      "variant": 2,
+      "file": "assets/audio/plasma-2.wav",
+      "duration": 0.48,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.77,
+      "rms": 0.18353,
+      "bytes": 30764,
+      "sha256": "ec470e7da80834b96206e5d1204238404b23c642ac10c8e5420e1cf0fb1512e8",
+      "sources": [
+        "laserLarge_001",
+        "thrusterFire_001",
+        "impactMetal_001"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "spread",
+      "variant": 2,
+      "file": "assets/audio/spread-2.wav",
+      "duration": 0.52,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.76,
+      "rms": 0.11983,
+      "bytes": 33324,
+      "sha256": "2bc3b48805318b6c402f15daf082a9a5b7ca2fd34701630e6692ce2828d87ad0",
+      "sources": [
+        "laserSmall_001",
+        "laserSmall_002",
+        "laserSmall_003",
+        "doorClose_001"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "missile",
+      "variant": 2,
+      "file": "assets/audio/missile-2.wav",
+      "duration": 1.1,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.78,
+      "rms": 0.20371,
+      "bytes": 70444,
+      "sha256": "910dcbd644b81e41ec2167b6f1e98aac5a74090dbdcfa74894e2680892d91a88",
+      "sources": [
+        "doorClose_001",
+        "thrusterFire_001",
+        "spaceEngineSmall_001"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "shield",
+      "variant": 2,
+      "file": "assets/audio/shield-2.wav",
+      "duration": 0.55,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.7,
+      "rms": 0.29626,
+      "bytes": 35244,
+      "sha256": "2c3c8692fcb8c3fdfcd73e281649ead8e09d43ba7b7a39772949c4131ba9762b",
+      "sources": [
+        "forceField_001",
+        "impactMetal_001"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "armor",
+      "variant": 2,
+      "file": "assets/audio/armor-2.wav",
+      "duration": 0.45,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.6873,
+      "rms": 0.10026,
+      "bytes": 28844,
+      "sha256": "fa8f4a7632c1c28a7f4cbbab61de56ce5fb21fc59d8c78e8e466c90a789a9a93",
+      "sources": [
+        "impactMetal_001",
+        "explosionCrunch_001"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "explosion_small",
+      "variant": 2,
+      "file": "assets/audio/explosion_small-2.wav",
+      "duration": 0.9,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.79,
+      "rms": 0.17706,
+      "bytes": 57644,
+      "sha256": "0f5c267fa8f1cc13fa321ec8b12c6a18c447fa80f238940e3490a9fc857b449b",
+      "sources": [
+        "explosionCrunch_001",
+        "distant"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "explosion_medium",
+      "variant": 2,
+      "file": "assets/audio/explosion_medium-2.wav",
+      "duration": 1.4,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.81,
+      "rms": 0.18818,
+      "bytes": 89644,
+      "sha256": "df4f894c2ba4deea16ecf9bbe82e0e9ba14172fd7a446c7828f8ddf96172ae26",
+      "sources": [
+        "explosionCrunch_001",
+        "lowFrequency_explosion_001",
+        "impactMetal_001"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "explosion_large",
+      "variant": 2,
+      "file": "assets/audio/explosion_large-2.wav",
+      "duration": 2,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.84,
+      "rms": 0.1559,
+      "bytes": 128044,
+      "sha256": "50862cefac70a7806fbb77b31c6d45df599f40fb4e596657c34b8ac1b6698a0b",
+      "sources": [
+        "lowFrequency_explosion_001",
+        "explosionCrunch_001",
+        "distant",
+        "impactMetal_001"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "plasma",
+      "variant": 3,
+      "file": "assets/audio/plasma-3.wav",
+      "duration": 0.48,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.77,
+      "rms": 0.15041,
+      "bytes": 30764,
+      "sha256": "3ec43dc97e4c666f093cb4740b6239f193e9eca6c0d2ef10a3517da1bf92cf94",
+      "sources": [
+        "laserLarge_002",
+        "thrusterFire_002",
+        "impactMetal_002"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "spread",
+      "variant": 3,
+      "file": "assets/audio/spread-3.wav",
+      "duration": 0.52,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.76,
+      "rms": 0.12695,
+      "bytes": 33324,
+      "sha256": "f99d9f58b863dbd7a1576acd5221a5a435398d2041c0b65708feaa139c382843",
+      "sources": [
+        "laserSmall_002",
+        "laserSmall_003",
+        "laserSmall_004",
+        "doorClose_002"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "missile",
+      "variant": 3,
+      "file": "assets/audio/missile-3.wav",
+      "duration": 1.1,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.78,
+      "rms": 0.19613,
+      "bytes": 70444,
+      "sha256": "b277647455349ea5d1eee277f79e24eaeddfc156da3c73d3ea3ed76a2f426ed6",
+      "sources": [
+        "doorClose_002",
+        "thrusterFire_002",
+        "spaceEngineSmall_002"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "shield",
+      "variant": 3,
+      "file": "assets/audio/shield-3.wav",
+      "duration": 0.55,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.7,
+      "rms": 0.28226,
+      "bytes": 35244,
+      "sha256": "0d65fc3c2d55a8d034ce3f41fa20495ab5750614dbe0b53184fc830716b47248",
+      "sources": [
+        "forceField_002",
+        "impactMetal_002"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "armor",
+      "variant": 3,
+      "file": "assets/audio/armor-3.wav",
+      "duration": 0.45,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.68537,
+      "rms": 0.07251,
+      "bytes": 28844,
+      "sha256": "ee32eabcff04353c0ea65bc4366dd3344ee06b89c737e45aa222ec0ed90da5c4",
+      "sources": [
+        "impactMetal_002",
+        "explosionCrunch_002"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "explosion_small",
+      "variant": 3,
+      "file": "assets/audio/explosion_small-3.wav",
+      "duration": 0.9,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.76949,
+      "rms": 0.15705,
+      "bytes": 57644,
+      "sha256": "2afcc0af969fa9d64975e136146a9f71a9e7c9ec4c8d9fc9b859621748e5f5bd",
+      "sources": [
+        "explosionCrunch_002",
+        "distant"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "explosion_medium",
+      "variant": 3,
+      "file": "assets/audio/explosion_medium-3.wav",
+      "duration": 1.4,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.81,
+      "rms": 0.15415,
+      "bytes": 89644,
+      "sha256": "38f0e43c46215d0af1e7f0417a4c299ec7fd6bc32586d8cbd38e30a7f763183c",
+      "sources": [
+        "explosionCrunch_002",
+        "lowFrequency_explosion_000",
+        "impactMetal_002"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "explosion_large",
+      "variant": 3,
+      "file": "assets/audio/explosion_large-3.wav",
+      "duration": 2,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.84,
+      "rms": 0.15628,
+      "bytes": 128044,
+      "sha256": "8d0f9659028b334d99168212bbb595024da705193265effb40539142f92b3d4d",
+      "sources": [
+        "lowFrequency_explosion_000",
+        "explosionCrunch_002",
+        "distant",
+        "impactMetal_002"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "spectra_fire",
+      "variant": 1,
+      "file": "assets/audio/spectra_fire-1.wav",
+      "duration": 0.9,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.79,
+      "rms": 0.1878,
+      "bytes": 57644,
+      "sha256": "bc60a6ffa6d5b8c39c1b6467ad943019d8b93c0e2920a23c6fff3fd6a51c8c52",
+      "sources": [
+        "laserLarge_000",
+        "forceField_000",
+        "thrusterFire_000"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "spectra_phase",
+      "variant": 1,
+      "file": "assets/audio/spectra_phase-1.wav",
+      "duration": 1.4,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.73,
+      "rms": 0.20183,
+      "bytes": 89644,
+      "sha256": "ea5a03e777b47c6ccbaff255c9712f6394280cc36e7a0085af36cb24c6652133",
+      "sources": [
+        "forceField_000",
+        "spaceEngineLarge_000",
+        "impactMetal_000"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "spectra_final",
+      "variant": 1,
+      "file": "assets/audio/spectra_final-1.wav",
+      "duration": 2.9,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.85,
+      "rms": 0.16622,
+      "bytes": 185644,
+      "sha256": "23769c7e5acebc15cb55a90cd6a6345a72818733f4a74c9eb04346dc1e8a51a9",
+      "sources": [
+        "lowFrequency_explosion_000",
+        "distant",
+        "explosionCrunch_000",
+        "explosionCrunch_001",
+        "explosionCrunch_002",
+        "explosionCrunch_003"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "nova",
+      "variant": 1,
+      "file": "assets/audio/nova-1.wav",
+      "duration": 2.2,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.83,
+      "rms": 0.15205,
+      "bytes": 140844,
+      "sha256": "262fcc7c00b1b3c36082a4ef491c092b2c59126e4238d212e761bda092030970",
+      "sources": [
+        "forceField_000",
+        "lowFrequency_explosion_000",
+        "space-laser",
+        "distant"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "confirm",
+      "variant": 1,
+      "file": "assets/audio/confirm-1.wav",
+      "duration": 0.23,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.55,
+      "rms": 0.16792,
+      "bytes": 14764,
+      "sha256": "3c3d73b52def7036ef2efce89aaeecf682fd2f0fd019c4fe26166cf5dfb5d679",
+      "sources": [
+        "doorOpen_000",
+        "forceField_000"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "pause",
+      "variant": 1,
+      "file": "assets/audio/pause-1.wav",
+      "duration": 0.28,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.5,
+      "rms": 0.20865,
+      "bytes": 17964,
+      "sha256": "e5a9b1d19e35009b7b5687d3c5b38fd617201c373d6f88bc0e5133bc82e85bf7",
+      "sources": [
+        "doorClose_000",
+        "forceField_000"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "victory",
+      "variant": 1,
+      "file": "assets/audio/victory-1.wav",
+      "duration": 1.8,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.65,
+      "rms": 0.16398,
+      "bytes": 115244,
+      "sha256": "db3847928ba2c826a23583a4d9a3b653c1998225761fbc3ee60d344451e85fb8",
+      "sources": [
+        "forceField_000",
+        "forceField_000",
+        "forceField_000",
+        "spaceEngineSmall_000"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "spectra_fire",
+      "variant": 2,
+      "file": "assets/audio/spectra_fire-2.wav",
+      "duration": 0.9,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.79,
+      "rms": 0.19452,
+      "bytes": 57644,
+      "sha256": "ac659fbfa322b423c4a6168b6d657763bf4729016bf3cf04968e8347f66c5b4b",
+      "sources": [
+        "laserLarge_001",
+        "forceField_001",
+        "thrusterFire_001"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "spectra_phase",
+      "variant": 2,
+      "file": "assets/audio/spectra_phase-2.wav",
+      "duration": 1.4,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.73,
+      "rms": 0.21722,
+      "bytes": 89644,
+      "sha256": "83275e3f36f4f1a935417c1387f90a5f61b53f247c980b8f8fe4c7fe76e848f7",
+      "sources": [
+        "forceField_001",
+        "spaceEngineLarge_001",
+        "impactMetal_001"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "spectra_final",
+      "variant": 2,
+      "file": "assets/audio/spectra_final-2.wav",
+      "duration": 2.9,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.85,
+      "rms": 0.14919,
+      "bytes": 185644,
+      "sha256": "4dcae1f7c055cab0b1b63b4ad2451333e78409c0baa7a42464290ecdf3832f5f",
+      "sources": [
+        "lowFrequency_explosion_001",
+        "distant",
+        "explosionCrunch_000",
+        "explosionCrunch_001",
+        "explosionCrunch_002",
+        "explosionCrunch_003"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "nova",
+      "variant": 2,
+      "file": "assets/audio/nova-2.wav",
+      "duration": 2.2,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.83,
+      "rms": 0.14586,
+      "bytes": 140844,
+      "sha256": "5e216282b48102973c45ec2433d56c288d16cc8a84db8d59dd10c4915ebcc97c",
+      "sources": [
+        "forceField_001",
+        "lowFrequency_explosion_001",
+        "space-laser",
+        "distant"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "confirm",
+      "variant": 2,
+      "file": "assets/audio/confirm-2.wav",
+      "duration": 0.23,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.55,
+      "rms": 0.15465,
+      "bytes": 14764,
+      "sha256": "6adb694f612c5cc9162f0e5f476b9126f7f8aa586d90429e41851c2041a5910a",
+      "sources": [
+        "doorOpen_001",
+        "forceField_001"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "pause",
+      "variant": 2,
+      "file": "assets/audio/pause-2.wav",
+      "duration": 0.28,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.5,
+      "rms": 0.20371,
+      "bytes": 17964,
+      "sha256": "d55f69692e75c71b415433438901ce969541c46e2c8be45261fd1c769bbbfb76",
+      "sources": [
+        "doorClose_001",
+        "forceField_001"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "victory",
+      "variant": 2,
+      "file": "assets/audio/victory-2.wav",
+      "duration": 1.8,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.65,
+      "rms": 0.16084,
+      "bytes": 115244,
+      "sha256": "f0487fc5b11d0e87229870a70d6c07e9da769abb131dbdb9c58d4b7d3b846c3a",
+      "sources": [
+        "forceField_001",
+        "forceField_001",
+        "forceField_001",
+        "spaceEngineSmall_001"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    },
+    {
+      "id": "ready",
+      "variant": 1,
+      "file": "assets/audio/ready-1.wav",
+      "duration": 0.65,
+      "sampleRate": 32000,
+      "channels": 1,
+      "peak": 0.55,
+      "rms": 0.18167,
+      "bytes": 41644,
+      "sha256": "33e3be283e151bdd428a1ac8f638118d4321361249cbd46811c77c194c1fdff8",
+      "sources": [
+        "forceField_003",
+        "spaceEngineSmall_003"
+      ],
+      "method": "assemblage de sources CC0, édition temporelle/hauteur, EQ, réflexions, compression douce ; aucun oscillateur runtime"
+    }
+  ]
+}

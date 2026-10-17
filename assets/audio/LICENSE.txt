@@ -1,0 +1,4 @@
+Sources et fichiers dérivés audio : CC0 1.0 Universal.
+https://creativecommons.org/publicdomain/zero/1.0/
+Assemblages/édition NV2 à partir de Kenney, NenadSimic et bart.
+Liste exacte et transformations : provenance.json.

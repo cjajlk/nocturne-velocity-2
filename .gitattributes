@@ -1,0 +1,8 @@
+* text=auto
+*.js text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.json text eol=lf
+*.png binary
+*.wav binary
+assets/audio/licenses/Kenney-CC0.txt binary
