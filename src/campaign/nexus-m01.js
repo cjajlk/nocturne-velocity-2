@@ -1,3 +1,4 @@
+import {protectCampaignArmament} from './weapons.js';
 import {update} from '../combat.js';
 import {createEnemy,updateEnemies} from '../enemies.js';
 import {createSession} from '../session.js';
@@ -75,15 +76,15 @@ function controller(s){
   snapshot(){return {id:'nexus_m01',phase,label:M01_LABELS[phase-1],elapsed,pending:queue.length,active:actors.filter(a=>!a.resolution).length,announcement:phase===3&&!breakerSpawned&&!outcome?'LE BRISEUR EN APPROCHE':null,breakerSpawned,breakerDestroyed,outcome:outcome?{...outcome}:null,history:history.map(v=>({...v})),resolved:resolved.map(v=>({...v})),plannedDifficulty:difficulty};}
  };
 }
-export function createNexusMissionRun(loadout){const s=createDefenseRun(loadout);controllers.set(s,controller(s));return s;}
+export function createNexusMissionRun(loadout,progress=null){const s=protectCampaignArmament(createDefenseRun(loadout),progress);controllers.set(s,controller(s));return s;}
 export const nexusMissionState=s=>controllers.get(s)?.snapshot()??null;
 export function updateNexusMission(s,dt,input={}){
  const c=controllers.get(s);if(!c||c.finished||s.nexus.state.closed||s.nexus.state.paused||!Number.isFinite(dt)||dt<=0||dt>.2)return;
  if(s.hp<=0||s.nexus.state.destroyed||s.over){c.after();return;}
  let left=dt;while(left>1e-10&&!s.over){const step=Math.min(1/120,left);s.nexus.tick(step);update(s,step,input,c.scenario);c.after();left-=step;}
 }
-export function createNexusMissionSession(){
- const base=createSession({makeRun:createNexusMissionRun,advance:updateNexusMission});
+export function createNexusMissionSession({readProgress=()=>null}={}){
+ const base=createSession({makeRun:loadout=>createNexusMissionRun(loadout,readProgress()),advance:updateNexusMission});
  const end=()=>{if(base.run)controllers.get(base.run)?.finish('abandoned');};
  return {
   get run(){return base.run;},get paused(){return base.paused;},get launching(){return base.launching;},get revision(){return base.revision;},

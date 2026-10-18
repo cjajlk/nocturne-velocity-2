@@ -1,3 +1,5 @@
+import {campaignWeaponIds} from './weapons.js';
+import {WEAPONS} from '../content.js';
 import {missionById,missionsForSystem} from './catalog.js';
 import {missionRecord,systemCampaignProgress} from './progression.js';
 import {DIFFICULTIES} from '../difficulty.js';
@@ -16,6 +18,7 @@ export function createCampaignView(host,readProgress,{onLaunch,canLaunch=()=>fal
   const table=document.createElement('table');table.className='campaign-records';const caption=document.createElement('caption');caption.textContent='Meilleurs records par difficulté';table.append(caption);const body=document.createElement('tbody');
   for(const difficulty of mission.difficulties){const row=document.createElement('tr'),label=document.createElement('th'),stars=document.createElement('td');label.scope='row';label.textContent=DIFFICULTIES[difficulty].name;stars.dataset.recordDifficulty=difficulty;stars.textContent=`${record.bestStars[difficulty]}/3 étoiles`;row.append(label,stars);body.append(row);}table.append(body);article.append(table);
   if(mission.playable&&onLaunch){
+   const armament=document.createElement('p');armament.className='campaign-weapon-brief';const allowed=campaignWeaponIds(progress);armament.textContent=(allowed.length===1?'Arme autorisée : ':'Armes autorisées : ')+allowed.map(id=>WEAPONS[id].name).join(', ');article.insertBefore(armament,table);
    const label=document.createElement('label');label.textContent='Difficulté';label.className='campaign-difficulty';const select=document.createElement('select');select.id='missionDifficulty';
    for(const d of mission.difficulties)select.add(new Option(DIFFICULTIES[d].name,d));select.value=choice;select.onchange=()=>{choice=select.value;};label.append(select);
    const play=document.createElement('button');play.type='button';play.dataset.launch=mission.id;play.className='primary campaign-play';play.textContent='JOUER';play.disabled=!canLaunch();article.insertBefore(label,table);article.insertBefore(play,table);

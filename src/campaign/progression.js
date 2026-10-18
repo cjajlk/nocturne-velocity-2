@@ -1,3 +1,4 @@
+import {weaponProgressCompatibility,withCampaignWeaponCache} from './weapons.js';
 import {missionById,missionsForSystem,CAMPAIGN_SYSTEMS} from './catalog.js';
 const object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
 const own=(v,k)=>Object.hasOwn(v,k);
@@ -8,6 +9,7 @@ export function campaignCompatibility(campaign){
  if(!object(campaign))return 'corrupt';
  if(campaign.version!==1)return 'incompatible';
  if(!object(campaign.missions))return 'corrupt';
+ const weapons=weaponProgressCompatibility(campaign.weapons);if(weapons!=='valid')return weapons;
  for(const [id,record] of Object.entries(campaign.missions)){
   const mission=missionById(id);if(!mission)continue;
   if(!object(record)||typeof record.completed!=='boolean'||!object(record.bestStars))return 'corrupt';
@@ -30,5 +32,5 @@ export function applyCampaignVictory(progress,result){
  if(current.completed&&best===current.bestStars[result.difficulty])return {state:structuredClone(progress),changed:false};
  const next=structuredClone(progress);next.campaign??={version:1,missions:{}};
  next.campaign.missions[mission.id]={...current,completed:true,bestStars:{...current.bestStars,[result.difficulty]:best}};
- return {state:next,changed:true};
+ return {state:withCampaignWeaponCache(next),changed:true};
 }

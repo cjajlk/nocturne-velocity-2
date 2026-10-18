@@ -2,8 +2,8 @@ import {createSession} from './session.js';
 import {createNexusMissionSession} from './campaign/nexus-m01.js';
 import {confirmedMissionResult} from './campaign/results.js';
 // Un seul vol actif ; les deux contrôleurs conservent leurs propres règles.
-export function createFlightSession(){
- const ambre=createSession(),nexus=createNexusMissionSession();let current=ambre,missionId=null,delivered=false;
+export function createFlightSession({readCampaignProgress=()=>null}={}){
+ const ambre=createSession(),nexus=createNexusMissionSession({readProgress:readCampaignProgress});let current=ambre,missionId=null,delivered=false;
  return {
   get run(){return current.run;},get paused(){return current.paused;},get launching(){return current.launching;},get revision(){return current.revision;},get missionId(){return missionId;},
   start(loadout,prepare,id=null){

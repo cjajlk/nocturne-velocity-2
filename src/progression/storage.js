@@ -1,3 +1,4 @@
+import {resetCampaignProgress} from '../campaign/reset.js';
 import {campaignCompatibility,applyCampaignVictory} from '../campaign/progression.js';
 import {PREREQUISITES,systemById,INITIAL_DESTINATIONS} from '../galaxy/catalog.js';
 import {createInitialProgress,advanceProgress} from '../galaxy/unlocks.js';
@@ -18,7 +19,7 @@ export function decodeProgress(raw){
  const compatibility=campaignCompatibility(value.campaign);if(compatibility!=='valid')return fallback(compatibility);
  return {status:'valid',raw,readOnly:false,state:{...value,version:1,unlockedDestinations:[...new Set([...INITIAL_DESTINATIONS,...value.unlockedDestinations])],accomplishments:[...new Set(value.accomplishments)]}};
 }
-export function createProgressStore(storage,{onIssue=()=>{}}={}){
+export function createProgressStore(storage,{onIssue=()=>{},canResetCampaign=()=>true}={}){
  let loaded;try{loaded=decodeProgress(storage.getItem(PROGRESS_KEY));}catch{loaded={status:'unavailable',state:createInitialProgress(),raw:null,readOnly:true};}
  let state=loaded.state,raw=loaded.raw,status=loaded.status,readOnly=loaded.readOnly,dirty=status==='absent',issue=null;
  function report(code){issue=code;onIssue(code);}
@@ -39,6 +40,23 @@ export function createProgressStore(storage,{onIssue=()=>{}}={}){
   get preservedRaw(){return raw;},
   initialize:flush,
   flush,
+  resetCampaign({confirmed=false}={}){
+   if(confirmed!==true)return {changed:false,persisted:false,reason:'confirmation-required'};
+   if(!canResetCampaign())return {changed:false,persisted:false,reason:'session-active'};
+   if(readOnly)return {changed:false,persisted:false,reason:issue||status};
+   let current;try{current=storage.getItem(PROGRESS_KEY);}catch{readOnly=true;report('read-failed');return {changed:false,persisted:false,reason:issue};}
+   if(current!==raw){readOnly=true;report('conflict');return {changed:false,persisted:false,reason:issue};}
+   let next;try{next=resetCampaignProgress(state);}catch{report('invalid-campaign-reset');return {changed:false,persisted:false,reason:issue};}
+   const serialized=JSON.stringify(next),changed=serialized!==JSON.stringify(state);
+   // Écriture avant publication en mémoire : un refus ne remet rien à zéro.
+   if(serialized!==raw){
+    try{storage.setItem(PROGRESS_KEY,serialized);}catch{report('write-failed');return {changed:false,persisted:false,reason:issue};}
+    let written;try{written=storage.getItem(PROGRESS_KEY);}catch{readOnly=true;report('read-failed');return {changed:false,persisted:false,reason:issue};}
+    if(written!==serialized){if(written!==raw)readOnly=true;report(written===raw?'write-failed':'conflict');return {changed:false,persisted:false,reason:issue};}
+   }
+   state=next;raw=serialized;dirty=false;status='valid';issue=null;
+   return {changed,persisted:true,reason:null};
+  },
   recordMissionVictory(result){
    if(readOnly)return {changed:false,persisted:false,reason:issue||status};
    let next;try{next=applyCampaignVictory(state,result);}catch{report('invalid-campaign-result');return {changed:false,persisted:false,reason:'invalid-campaign-result'};}
