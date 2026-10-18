@@ -1,3 +1,9 @@
+import {createFlightSession} from './flight-session.js';
+import {createMissionResults} from './campaign/results.js';
+import {createMissionResultView} from './campaign/result-view.js';
+import {nexusMissionState} from './campaign/nexus-m01.js';
+import {createDefenseHUD} from './defense/view.js';
+import {setDefenseBounds} from './defense/simulation.js';
 import {createPortraitGuard} from './portrait.js';
 import {createAudioManager} from './audio.js';
 import {loadPreferences,savePreferences} from './preferences.js';
@@ -5,15 +11,19 @@ import {takeEvents} from './events.js';
 import {SHIPS,WEAPONS,DRONES,ASSETS} from './content.js';
 import {createGalaxyView} from './galaxy/view.js';
 import {createProgressStore} from './progression/storage.js';
-import {createGarage} from './garage.js';import {createNavigation} from './navigation.js';import {createSession} from './session.js';import {viewport,pointer,createClock} from './core.js';import {setBounds,nova} from './combat.js';import {cycleWeapon} from './weapons.js';import {loadAssets} from './assets.js';import {createCJAdapter} from './adapters/cj.js';import {createRenderer} from './renderer.js';
+import {createGarage} from './garage.js';import {createNavigation} from './navigation.js';import {viewport,pointer,createClock} from './core.js';import {setBounds,nova} from './combat.js';import {cycleWeapon} from './weapons.js';import {loadAssets} from './assets.js';import {createCJAdapter} from './adapters/cj.js';import {createRenderer} from './renderer.js';
 const $=id=>document.getElementById(id),canvas=$('canvas'),clock=createClock(),cj=createCJAdapter();
 let storage;try{storage=window.localStorage;}catch{storage=null;}$('status').textContent=storage?'':'Sauvegarde indisponible : session en mémoire.';
 const progression=createProgressStore(storage,{onIssue:()=>{$('status').textContent='Progression indisponible : données conservées, session en mémoire.';}});progression.initialize();
-const preferences=loadPreferences(storage),audio=createAudioManager(preferences),session=createSession();
+const preferences=loadPreferences(storage),audio=createAudioManager(preferences),session=createFlightSession();
 const garage=createGarage(storage,()=>{$('status').textContent='Sauvegarde indisponible : session en mémoire.';});
 let orientationBlocked=false;
 let target=null,keys=new Set(),activePointer=null,renderer,frameId=null;
-const galaxy=createGalaxyView($('galaxy'),()=>progression.state);
+const missionResults=createMissionResults(progression),defenseHUD=createDefenseHUD(document,audio,{messageFor:(s,message)=>s.over?'Combat terminé':nexusMissionState(s)?.phase===1?'Interceptez les chasseurs · Nexus protégée':message});let lastMissionDifficulty='normal';
+const resultView=createMissionResultView($('missionResult'),{replay:()=>start('nexus_m01',lastMissionDifficulty),back:()=>back(),retry:()=>{const result=missionResults.retry(session.run);if(result)resultView.show(result,{focus:false});}});
+const galaxy=createGalaxyView($('galaxy'),()=>progression.state,{onLaunch:(id,difficulty)=>start(id,difficulty),canLaunch:()=>!!renderer&&!session.launching&&!orientationBlocked,defaultDifficulty:()=>preferences.difficulty});
+function combatInert(value){for(const el of [$('canvas'),document.querySelector('.combat-top'),document.querySelector('.combat-bottom'),$('missionDefense')])el.inert=value;}
+
 const navigation=createNavigation({initial:'galaxy',leave(previous,next){resetInput();if(session.launching)session.cancelStart();if(previous==='galaxy')galaxy.exit();if(next!=='combat'&&frameId!==null){cancelAnimationFrame(frameId);frameId=null;}},enter(screen){
  const combat=screen==='combat';document.body.classList.toggle('in-flight',combat);document.body.classList.toggle('on-galaxy',screen==='galaxy');$('menu').hidden=screen!=='menu';$('arena').hidden=!combat;$('galaxy').hidden=screen!=='galaxy';
  if(!orientationBlocked){if(screen==='galaxy'){galaxy.enter();galaxy.focus();}else (combat?canvas:$('ship')).focus({preventScroll:true});}
@@ -23,23 +33,25 @@ function describe(){const profile=garage.profile,s=SHIPS[profile.ship];$('spec')
 function resetInput(){keys.clear();target=null;const captured=activePointer;activePointer=null;if(captured!==null&&canvas.hasPointerCapture(captured))canvas.releasePointerCapture(captured);const run=session.run;if(run){run.vx=0;run.vy=0;takeEvents(run);}clock.reset();cj.suspend();}
 function foreground(){return !orientationBlocked&&!document.hidden&&document.hasFocus();}
 function active(){return session.active(navigation.screen==='combat',foreground());}
-function showStartState(){$('mapLaunch').disabled=!renderer||session.launching;$('start').disabled=!renderer||session.launching;if(renderer&&!session.launching)$('start').innerHTML='ENTRER DANS LA FAILLE <b>↗</b>';}
-async function start(){
+function showStartState(){$('mapLaunch').disabled=!renderer||session.launching;$('start').disabled=!renderer||session.launching;if(renderer&&!session.launching)$('start').innerHTML='ENTRER DANS LA FAILLE <b>↗</b>';if(navigation.screen==='galaxy')galaxy.refresh();}
+async function start(missionId=null,difficulty=preferences.difficulty){
  if(orientationBlocked||!renderer||session.launching)return;
  $('start').disabled=true;$('mapLaunch').disabled=true;
  try{
-  const run=await session.start({...garage.profile,difficulty:preferences.difficulty},async current=>{
+  const run=await session.start({...garage.profile,difficulty},async current=>{
    if(preferences.enabled){$('start').textContent='PRÉPARATION AUDIO…';const ready=await audio.unlock();if(!current())return;if(!ready||audio.diagnostics().failed.length)$('status').textContent='Audio indisponible ou incomplet. Son OFF reste disponible.';}
    if(!current())return;audio.stop();await audio.resume();
-  });
+  },missionId);
   if(!run||run!==session.run)return;
+  if(missionId)lastMissionDifficulty=difficulty;
+  document.body.classList.toggle('in-mission',!!missionId);$('arena').classList.toggle('mission-flight',!!missionId);$('missionDefense').hidden=!missionId;resultView.hide();combatInert(false);$('flightSector').textContent=missionId?'PREMIÈRE ALERTE':'FAILLE D’AMBRE';
   if(!foreground()){session.pause();audio.suspend();}else audio.play('confirm',{ui:true});
   resetInput();navigation.show('combat');$('restart').hidden=true;$('endActions').hidden=true;resize();run.y=run.height*.76;if(frameId===null)frameId=requestAnimationFrame(frame);
  }catch{audio.stop();$('status').textContent='Préparation du vol indisponible. Réessayez.';}
  finally{showStartState();}
 }
-function back(){resetInput();session.abandon();audio.stop();audio.play('confirm',{ui:true});navigation.show('galaxy');showStartState();describe();}
-$('start').onclick=start;$('restart').onclick=start;$('back').onclick=back;$('endGalaxy').onclick=back;$('garageBack').onclick=back;
+function back(){resetInput();resultView.hide();combatInert(false);$('missionDefense').hidden=true;document.body.classList.remove('in-mission');$('arena').classList.remove('mission-flight');session.abandon();audio.stop();audio.play('confirm',{ui:true});navigation.show('galaxy');showStartState();describe();}
+$('start').onclick=()=>start();$('restart').onclick=()=>start();$('back').onclick=back;$('endGalaxy').onclick=back;$('garageBack').onclick=back;
 $('mapLaunch').onclick=()=>{if(navigation.screen==='galaxy')return start();};
 $('openGarage').onclick=()=>{if(navigation.screen!=='galaxy')return;session.cancelStart();audio.stop();navigation.show('menu');showStartState();describe();};
 function toggle(){
@@ -59,11 +71,11 @@ for(const type of ['pointerup','pointercancel','lostpointercapture'])canvas.addE
 function suspend(){galaxy.cancelGestures();session.cancelStart();session.pause();audio.suspend();resetInput();showStartState();}
 for(const event of ['blur','pagehide'])window.addEventListener(event,suspend);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)suspend();else resetInput();});window.addEventListener('focus',resetInput);window.addEventListener('pageshow',resetInput);
-function resize(){const run=session.run;if(orientationBlocked||navigation.screen!=='combat'||!run)return;const rect=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,1.5),v=viewport(rect.width,rect.height);canvas.width=Math.max(1,Math.round(rect.width*dpr));canvas.height=Math.max(1,Math.round(rect.height*dpr));setBounds(run,v.width,v.height);resetInput();}
+function resize(){const run=session.run;if(orientationBlocked||navigation.screen!=='combat'||!run)return;const rect=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,1.5),v=viewport(rect.width,rect.height);canvas.width=Math.max(1,Math.round(rect.width*dpr));canvas.height=Math.max(1,Math.round(rect.height*dpr));(session.missionId?setDefenseBounds:setBounds)(run,v.width,v.height);resetInput();}
 window.addEventListener('resize',resize);window.addEventListener('orientationchange',resize);window.visualViewport?.addEventListener('resize',resize);
 function frame(now){frameId=null;if(orientationBlocked)return;const run=session.run,paused=session.paused,playing=active();clock.frame(now,playing,dt=>{session.step(dt,{target,dx:Number(keys.has('arrowright')||keys.has('d'))-Number(keys.has('arrowleft')||keys.has('a')||keys.has('q')),dy:Number(keys.has('arrowdown')||keys.has('s'))-Number(keys.has('arrowup')||keys.has('w')||keys.has('z'))},navigation.screen==='combat',foreground());cj.tick(dt*1000);});
- if(navigation.screen==='combat'&&run&&renderer){audio.consume(takeEvents(run),run.width);renderer.render(run);$('hud').textContent=String(run.score).padStart(6,'0');$('armor').max=run.spec.hp;$('armor').value=run.hp;$('armorText').textContent=`${Math.ceil(run.hp)} / ${run.spec.hp}`;$('phase').textContent=run.phase;$('timer').textContent=`${String(Math.floor(run.t/60)).padStart(2,'0')}:${String(Math.floor(run.t%60)).padStart(2,'0')}`;$('cycle').innerHTML=WEAPONS[run.loadout.weapon].name+'<small>C / CHANGER</small>';$('cycle').title=WEAPONS[run.loadout.weapon].description;$('cycle').disabled=!!run.ending;$('nova').disabled=!active()||!!run.ending||run.novaCharge<100;$('nova').textContent=run.novaCharge>=100?'NOVA / PRÊTE':`NOVA / ${Math.floor(run.novaCharge)} %`;$('nova').style.setProperty('--charge',run.novaCharge+'%');$('nova').setAttribute('aria-label',`Impulsion NOVA, charge ${Math.floor(run.novaCharge)} pour cent`);$('nova').title='Charge par destructions du pilote ou du drone Alpha. N ou toucher à 100 %.';$('overlay').hidden=active();$('overlay').textContent=run.over?(run.victory?'SPECTRA NEUTRALISÉE\nSECTEUR SÉCURISÉ':'VAISSEAU PERDU\nFIN DE LA DÉMONSTRATION'):paused?'VOL EN PAUSE':'SESSION SUSPENDUE';$('pause').textContent=paused?'Reprendre':'Pause';const result=session.takeResult();if(result){garage.recordResult(result);$('restart').hidden=false;$('endActions').hidden=false;}}
- if(navigation.screen==='combat'&&!orientationBlocked)frameId=requestAnimationFrame(frame);}
+ if(navigation.screen==='combat'&&run&&renderer){audio.consume(takeEvents(run),run.width);renderer.render(run);if(session.missionId){defenseHUD.render(run,paused);const mission=nexusMissionState(run);$('missionAnnouncement').textContent=mission.announcement||(mission.breakerSpawned&&!mission.breakerDestroyed?'LE BRISEUR · DERNIÈRE PERCÉE':'');}$('hud').textContent=String(run.score).padStart(6,'0');$('armor').max=run.spec.hp;$('armor').value=run.hp;$('armorText').textContent=`${Math.ceil(run.hp)} / ${run.spec.hp}`;$('phase').textContent=session.missionId&&run.over?(nexusMissionState(run).outcome?.reason==='objectives_met'?'NEXUS / MISSION ACCOMPLIE':'NEXUS / MISSION ÉCHOUÉE'):run.phase;$('timer').textContent=`${String(Math.floor(run.t/60)).padStart(2,'0')}:${String(Math.floor(run.t%60)).padStart(2,'0')}`;$('cycle').innerHTML=WEAPONS[run.loadout.weapon].name+'<small>C / CHANGER</small>';$('cycle').title=WEAPONS[run.loadout.weapon].description;$('cycle').disabled=!!run.ending;$('nova').disabled=!active()||!!run.ending||run.novaCharge<100;$('nova').textContent=run.novaCharge>=100?'NOVA / PRÊTE':`NOVA / ${Math.floor(run.novaCharge)} %`;$('nova').style.setProperty('--charge',run.novaCharge+'%');$('nova').setAttribute('aria-label',`Impulsion NOVA, charge ${Math.floor(run.novaCharge)} pour cent`);$('nova').title='Charge par destructions du pilote ou du drone Alpha. N ou toucher à 100 %.';$('overlay').hidden=active();$('overlay').textContent=run.over?(run.victory?'SPECTRA NEUTRALISÉE\nSECTEUR SÉCURISÉ':'VAISSEAU PERDU\nFIN DE LA DÉMONSTRATION'):paused?'VOL EN PAUSE':'SESSION SUSPENDUE';$('pause').textContent=paused?'Reprendre':'Pause';const result=session.takeResult();if(result){if(session.missionId){const settled=missionResults.settle(run);if(settled){resultView.show(settled);combatInert(true);audio.play(settled.victory?'victory':'explosion_large',{ui:true});}}else{garage.recordResult(result);$('restart').hidden=false;$('endActions').hidden=false;}}if(session.missionId&&run.over)$('overlay').hidden=true;}
+ if(navigation.screen==='combat'&&!orientationBlocked&&!(session.missionId&&run?.over))frameId=requestAnimationFrame(frame);}
 function showAudio(){ $('soundToggle').textContent=preferences.enabled?'SON ON':'SON OFF';$('soundToggle').setAttribute('aria-pressed',String(preferences.enabled));$('volume').value=Math.round(preferences.volume*100);$('volumeValue').textContent=Math.round(preferences.volume*100)+' %';}
 $('difficulty').value=preferences.difficulty;$('difficulty').onchange=()=>{preferences.difficulty=$('difficulty').value;savePreferences(storage,preferences);};
 $('soundToggle').onclick=()=>{preferences.enabled=!preferences.enabled;audio.setEnabled(preferences.enabled);if(preferences.enabled)audio.unlock().then(()=>audio.play('confirm',{ui:true}));savePreferences(storage,preferences);showAudio();};
@@ -80,4 +92,4 @@ function orientationChanged(blocked){
 const portraitGuard=createPortraitGuard(orientationChanged);
 describe();$('start').disabled=true;$('start').textContent='PRÉPARATION DU VOL…';const images=await loadAssets(ASSETS),missing=Object.entries(images).filter(([,i])=>!i).map(([id])=>id);if(missing.length){$('status').textContent='Assets indisponibles : '+missing.join(', ')+'. Rechargez la page.';}else{renderer=createRenderer(canvas,images);showStartState();$('start').innerHTML='ENTRER DANS LA FAILLE <b>↗</b>';}
 // Diagnostic en lecture seule, sans raccourci de gameplay ni écriture de sauvegarde.
-Object.defineProperty(window,'nv2Diagnostics',{value:()=>{const run=session.run,paused=session.paused;return {screen:navigation.screen,orientationBlocked:portraitGuard.blocked,galaxy:galaxy.diagnostics,launching:session.launching,active:active(),paused,over:run?.over,victory:run?.victory,time:run?.t,hp:run?.hp,ship:run?.loadout.ship,weapon:run?.loadout.weapon,novaCharge:run?.novaCharge,novaUses:run?.stats.novaUses,ending:!!run?.ending,bossPhase:run?.enemies.find(e=>e.boss)?.phase,warningCount:run?.enemies.filter(e=>e.warning).length,velocity:run?{x:run.vx,y:run.vy}:null,stats:run?{...run.stats,bossPhases:[...run.stats.bossPhases]}:null,position:run?{x:run.x,y:run.y}:null,bounds:run?{width:run.width,height:run.height}:null,difficulty:run?.loadout.difficulty||preferences.difficulty,audio:audio.diagnostics(),counts:run?Object.fromEntries(['bullets','hostile','enemies','effects','particles'].map(k=>[k,run[k].length])):{},render:renderer?.metrics(),missing};}});
+Object.defineProperty(window,'nv2Diagnostics',{value:()=>{const run=session.run,paused=session.paused;return {threats:run?.nexus?run.enemies.map(e=>({id:e.id,type:e.type,breaker:!!e.breaker,x:e.x,y:e.y,hp:e.hp,bomber:e.defenseBomber?{...e.defenseBomber}:null,warning:e.warning?{...e.warning}:null})):[],missionId:session.missionId,mission:session.missionId&&run?nexusMissionState(run):null,nexus:run?.nexus?.state,progress:progression.diagnostics,screen:navigation.screen,orientationBlocked:portraitGuard.blocked,galaxy:galaxy.diagnostics,launching:session.launching,active:active(),paused,over:run?.over,victory:run?.victory,time:run?.t,hp:run?.hp,ship:run?.loadout.ship,weapon:run?.loadout.weapon,novaCharge:run?.novaCharge,novaUses:run?.stats.novaUses,ending:!!run?.ending,bossPhase:run?.enemies.find(e=>e.boss)?.phase,warningCount:run?.enemies.filter(e=>e.warning).length,velocity:run?{x:run.vx,y:run.vy}:null,stats:run?{...run.stats,bossPhases:[...run.stats.bossPhases]}:null,position:run?{x:run.x,y:run.y}:null,bounds:run?{width:run.width,height:run.height}:null,difficulty:run?.loadout.difficulty||preferences.difficulty,audio:audio.diagnostics(),counts:run?Object.fromEntries(['bullets','hostile','enemies','effects','particles'].map(k=>[k,run[k].length])):{},render:renderer?.metrics(),missing};}});

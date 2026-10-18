@@ -1,7 +1,7 @@
 import {createRun,update} from './combat.js';
 
 // Cycle de vie du vol ; aucune écriture de stockage ni dépendance au DOM/audio.
-export function createSession(){
+export function createSession({makeRun=createRun,advance=update}={}){
  let run=null,paused=false,pending=false,generation=0,revision=0,recorded=false;
  const active=(combatVisible,foreground)=>!!run&&combatVisible&&foreground&&!paused&&!run.over;
  return {
@@ -13,7 +13,7 @@ export function createSession(){
    try{
     await prepare(current);
     if(!current())return null;
-    run=createRun(snapshot);paused=false;recorded=false;revision++;
+    run=makeRun(snapshot);paused=false;recorded=false;revision++;
     return run;
    }catch(error){if(generation===ticket)throw error;return null;}
    finally{if(generation===ticket)pending=false;}
@@ -23,7 +23,7 @@ export function createSession(){
   pause(){if(!run||run.over||paused)return false;paused=true;revision++;return true;},
   resume(){if(!run||run.over||!paused)return false;paused=false;revision++;return true;},
   active,
-  step(dt,input,combatVisible,foreground){if(active(combatVisible,foreground))update(run,dt,input);},
+  step(dt,input,combatVisible,foreground){if(active(combatVisible,foreground))advance(run,dt,input);},
   takeResult(){
    if(!run?.over||recorded)return null;
    recorded=true;return {score:run.score,victory:run.victory};

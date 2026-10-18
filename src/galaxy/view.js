@@ -1,10 +1,12 @@
+import {createCampaignView} from '../campaign/view.js';
 import {SYSTEMS,PREREQUISITES} from './catalog.js';
 import {listDestinations} from './unlocks.js';
 import {createGalaxyCamera,layoutSystems} from './camera.js';
 
 const roles={base:'Base principale',civilian:'Missions civiles',extraction:'Ressources & extraction',reconnaissance_conquest:'Reconnaissance & conquête',frontline:'Grandes batailles'};
-export function createGalaxyView(root,readProgress){
+export function createGalaxyView(root,readProgress,campaignOptions={}){
  const $=id=>root.querySelector('#'+id),stage=$('galaxyViewport'),panel=$('destinationPanel'),svg=$('galaxyRoutes'),nodes=new Map();
+ const campaign=createCampaignView($('destinationMissions'),readProgress,campaignOptions);
  const NS=svg.namespaceURI;
  let active=false,controller=null,observer=null,raf=null,selected='nexus',portrait=false,renderCount=0;
  let points=layoutSystems(SYSTEMS),drag=null,multi=false;const pointers=new Map(),camera=createGalaxyCamera(points);
@@ -29,7 +31,7 @@ export function createGalaxyView(root,readProgress){
   if(!current)return;$('destinationName').textContent=current.name;$('destinationRole').textContent=roles[current.sectorType]||current.sectorType;$('destinationDescription').textContent=current.description;
   $('destinationStatus').textContent=current.access.accessible?'Accès ouvert':'Système verrouillé';$('destinationStatus').dataset.access=current.access.status;
   const conditions=$('destinationConditions');conditions.replaceChildren();if(!current.access.accessible&&current.access.condition)conditions.append(conditionView(current.access.condition));
-  $('missionAvailability').textContent='Missions à venir';$('nexusOperation').hidden=current.id!=='nexus';
+  campaign.render(current);$('missionAvailability').textContent=current.id==='nexus'?'Première Alerte disponible · autres missions à venir':'Missions à venir';$('nexusOperation').hidden=current.id!=='nexus';
  }
  function render(){
   raf=null;if(!active)return;const rect=stage.getBoundingClientRect();if(!rect.width||!rect.height)return;
@@ -55,6 +57,7 @@ export function createGalaxyView(root,readProgress){
  function up(e){if(!pointers.has(e.pointerId))return;const click=pointers.size===1&&!multi&&drag&&!drag.moved?drag.id:null;pointers.delete(e.pointerId);if(stage.hasPointerCapture(e.pointerId))stage.releasePointerCapture(e.pointerId);if(click)select(click);if(!pointers.size){drag=null;multi=false;}else{const p=[...pointers.values()][0];drag={...p,id:null,moved:true};}}
  function enter(){
   if(active)return;active=true;controller=new AbortController();const signal=controller.signal,on=(el,event,fn,options={})=>el.addEventListener(event,fn,{...options,signal});
+  on($('destinationMissions'),'click',campaign.handleClick);
   on(stage,'pointerdown',down);on(stage,'pointermove',move);on(stage,'pointerup',up);on(stage,'pointercancel',cancelGestures);on(stage,'lostpointercapture',e=>{if(pointers.has(e.pointerId))cancelGestures();});
   on(stage,'click',e=>{const id=e.target.closest('[data-system]')?.dataset.system;if(e.detail===0&&id)select(id);});
   on(stage,'wheel',e=>{if(e.ctrlKey)return;e.preventDefault();const p=location(e);camera.zoomAt(Math.exp(-Math.max(-150,Math.min(150,e.deltaY))*.002),p.x,p.y);schedule();},{passive:false});
@@ -63,5 +66,5 @@ export function createGalaxyView(root,readProgress){
   observer=new ResizeObserver(schedule);observer.observe(stage);on(window,'resize',schedule);refreshSheet();schedule();
  }
  function exit(){active=false;cancelGestures();controller?.abort();controller=null;observer?.disconnect();observer=null;if(raf!==null)cancelAnimationFrame(raf);raf=null;}
- return {enter,exit,cancelGestures,focus(){nodes.get(selected)?.focus({preventScroll:true});},get diagnostics(){return {active,selected,panelOpen:!panel.hidden,pointers:pointers.size,pendingFrame:raf!==null,renderCount,camera:camera.state};}};
+ return {enter,exit,cancelGestures,refresh:refreshSheet,focus(){nodes.get(selected)?.focus({preventScroll:true});},get diagnostics(){return {active,selected,panelOpen:!panel.hidden,pointers:pointers.size,pendingFrame:raf!==null,renderCount,camera:camera.state};}};
 }

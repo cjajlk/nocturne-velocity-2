@@ -1,3 +1,4 @@
+import {missionsForSystem} from '../campaign/catalog.js';
 function freeze(value){if(value&&typeof value==='object'){for(const child of Object.values(value))freeze(child);Object.freeze(value);}return value;}
 
 // Jalons descriptifs, pas des missions. Aucun producteur jouable pour l'instant.
@@ -11,7 +12,7 @@ export const PREREQUISITES=freeze({
 });
 const fact=id=>({op:'fact',id});
 export const SYSTEMS=freeze([
- {id:'nexus',name:'Nexus',description:'Base principale et point de départ.',sectorType:'base',initialAccess:true,visible:true,unlockCondition:null,missionIds:[],planetIds:[]},
+ {id:'nexus',name:'Nexus',description:'Base principale et point de départ.',sectorType:'base',initialAccess:true,visible:true,unlockCondition:null,missionIds:missionsForSystem('nexus').map(m=>m.id),planetIds:[]},
  {id:'aurora',name:'Aurora',description:'Secteur destiné aux futures missions civiles.',sectorType:'civilian',initialAccess:true,visible:true,unlockCondition:null,missionIds:[],planetIds:[]},
  {id:'echo',name:'Écho',description:'Secteur destiné aux ressources et à l’extraction.',sectorType:'extraction',initialAccess:false,visible:true,unlockCondition:{op:'any',conditions:[fact('campaign.echo_access'),fact('secondary.echo_discovery')]},missionIds:[],planetIds:[]},
  {id:'nyx',name:'Nyx',description:'Secteur destiné à la reconnaissance et à la conquête.',sectorType:'reconnaissance_conquest',initialAccess:false,visible:true,unlockCondition:{op:'any',conditions:[fact('campaign.nyx_major_progress'),fact('recon.nyx_access')]},missionIds:[],planetIds:[]},

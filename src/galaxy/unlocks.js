@@ -25,5 +25,5 @@ export function advanceProgress(progress,validatedAccomplishments){
  const accomplishments=[...new Set([...progress.accomplishments,...validatedAccomplishments])];
  const unlocked=new Set([...INITIAL_DESTINATIONS,...progress.unlockedDestinations]);
  for(const system of SYSTEMS)if(evaluateCondition(system.unlockCondition,accomplishments))unlocked.add(system.id);
- return {version:1,unlockedDestinations:[...unlocked],accomplishments};
+ return {...structuredClone(progress),version:1,unlockedDestinations:[...unlocked],accomplishments};
 }

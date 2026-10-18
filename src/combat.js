@@ -68,15 +68,17 @@ function finale(s,dt){
  if(end.time>=end.next&&end.time<1.8){const i=Math.round(end.next/.18),a=i*2.4;effect(s,i%3===0?'largeExplosion':'explosion',end.x+Math.cos(a)*75,end.y+Math.sin(a)*60,i%3===0?170:90);end.next+=.18;}
  if(end.time>=end.duration){emit(s,'victory');s.over=true;s.victory=true;s.phase='SPECTRA / NEUTRALISÉE';}
 }
-export function update(s,dt,input={}){
+export function update(s,dt,input={},scenario=null){
  if(s.over||!Number.isFinite(dt)||dt<=0||dt>.05)return;
  s.t+=dt;s.invincible=Math.max(0,s.invincible-dt);advanceEffects(s,dt);
  if(s.ending){finale(s,dt);return;}
  movePlayer(s,dt,input);firePlayer(s,dt);drones(s,dt);
- s.phase=s.t<12?'01 / ESCADRILLES':s.t<24?'02 / FLANQUEMENT':s.t<38?'03 / SALVES LOURDES':'SPECTRA / APPROCHE';
- spawnWaves(s);advanceBullets(s,dt);updateEnemies(s,dt);
+ if(!scenario)s.phase=s.t<12?'01 / ESCADRILLES':s.t<24?'02 / FLANQUEMENT':s.t<38?'03 / SALVES LOURDES':'SPECTRA / APPROCHE';
+ if(scenario)scenario.spawn?.(s,dt);else spawnWaves(s);
+ scenario?.snapshot(s,dt);advanceBullets(s,dt);if(scenario)scenario.move(s,dt);else updateEnemies(s,dt);
+ scenario?.resolve(s,dt);
  for(const e of s.enemies){
-  if(e.hp<=0)continue;
+  if(e.hp<=0||scenario?.handles(e))continue;
   for(const b of s.bullets)if(!b.dead&&e.hp>0&&circleRect(e.x,e.y,e.r,b.x-4,b.y-11,8,22)){
    if(damageEnemy(s,e,b.damage,b.owner)){b.dead=true;effect(s,'impact',b.x,b.y,b.kind==='missile'?48:25);}
   }
@@ -84,7 +86,7 @@ export function update(s,dt,input={}){
  }
  for(const b of s.hostile){b.arm-=dt;b.life-=dt;b.x+=b.vx*dt;b.y+=b.vy*dt;if(b.arm<=0&&Math.hypot(b.x-s.x,b.y-s.y)<s.spec.r+b.r){hitPlayer(s,b.damage);b.dead=true;}}
  deaths(s);
- s.enemies=s.enemies.filter(e=>{const out=e.retreat?e.y< -200:e.type==='interceptor'?e.age>7:e.y>s.height+100||e.x< -200||e.x>s.width+200;if(out)s.stats.escaped++;return !out;});
+ s.enemies=s.enemies.filter(e=>{if(scenario?.handles(e))return true;const out=e.retreat?e.y< -200:e.type==='interceptor'?e.age>7:e.y>s.height+100||e.x< -200||e.x>s.width+200;if(out)s.stats.escaped++;return !out;});
  s.bullets=s.bullets.filter(b=>!b.dead);s.hostile=s.hostile.filter(b=>!b.dead&&b.life>0&&b.x> -100&&b.x<s.width+100&&b.y> -150&&b.y<s.height+80);
  // Un ennemi qui s’échappe n’inflige aucun dégât gratuit au pilote.
  if(s.hp<=0){emit(s,'explosion_large');s.over=true;s.victory=false;effect(s,'largeExplosion',s.x,s.y,s.spec.size*1.7);}
