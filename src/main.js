@@ -1,3 +1,4 @@
+import {initializePersistence} from './persistence/runtime.js';
 import {campaignRunWeaponIds,cycleCampaignWeapon} from './campaign/weapons.js';
 import {renderCampaignWeapons} from './campaign/weapon-view.js';
 import {createCampaignOptions} from './campaign/options-view.js';
@@ -15,11 +16,18 @@ import {SHIPS,WEAPONS,DRONES,ASSETS} from './content.js';
 import {createGalaxyView} from './galaxy/view.js';
 import {createProgressStore} from './progression/storage.js';
 import {createGarage} from './garage.js';import {createNavigation} from './navigation.js';import {viewport,pointer,createClock} from './core.js';import {setBounds,nova} from './combat.js';import {cycleWeapon} from './weapons.js';import {loadAssets} from './assets.js';import {createCJAdapter} from './adapters/cj.js';import {createRenderer} from './renderer.js';
+async function boot(){
 const $=id=>document.getElementById(id),canvas=$('canvas'),clock=createClock(),cj=createCJAdapter();
-let storage;try{storage=window.localStorage;}catch{storage=null;}$('status').textContent=storage?'':'Sauvegarde indisponible : session en mémoire.';
-const progression=createProgressStore(storage,{canResetCampaign:()=>!session.launching&&!session.run,onIssue:()=>{$('status').textContent='Progression indisponible : données conservées, session en mémoire.';}});progression.initialize();
+$('start').disabled=true;$('mapLaunch').disabled=true;
+let historical;try{historical=window.localStorage;}catch{historical=null;}
+let stopForStorage=()=>{};
+const persistence=await initializePersistence({indexedDB:window.indexedDB,storage:historical,onIssue:()=>{stopForStorage();$('status').textContent='Sauvegarde bloquée : fermez les anciens onglets et rechargez. Les données ne sont pas réinitialisées.';document.querySelector('main').inert=true;}});
+const storage=persistence.storage;
+Object.defineProperty(window,'nv2PersistenceDiagnostics',{value:()=>persistence.diagnostics});
+const progression=createProgressStore(storage,{canResetCampaign:()=>!session.launching&&!session.run,onIssue:()=>{$('status').textContent=persistence.blocked?'Sauvegarde bloquée : rechargez avant de continuer. Données conservées.':'Progression indisponible : données conservées, session en mémoire.';}});progression.initialize();
 const preferences=loadPreferences(storage),audio=createAudioManager(preferences),session=createFlightSession({readCampaignProgress:()=>progression.state});
-const garage=createGarage(storage,()=>{$('status').textContent='Sauvegarde indisponible : session en mémoire.';});
+const garage=createGarage(storage,()=>{$('status').textContent='Écriture non confirmée : rechargez avant de continuer. Données conservées.';},{readBalance:persistence.balance});
+if(persistence.blocked)throw new Error('storage-blocked');
 let orientationBlocked=false;
 let target=null,keys=new Set(),activePointer=null,renderer,frameId=null;
 const missionResults=createMissionResults(progression),defenseHUD=createDefenseHUD(document,audio,{messageFor:(s,message)=>s.over?'Combat terminé':nexusMissionState(s)?.phase===1?'Interceptez les chasseurs · Nexus protégée':message});let lastMissionDifficulty='normal';
@@ -34,7 +42,7 @@ const navigation=createNavigation({initial:'galaxy',leave(previous,next){resetIn
 for(const [id,catalog] of Object.entries({ship:SHIPS,weapon:WEAPONS,drone:DRONES})){for(const [value,item] of Object.entries(catalog))$(id).add(new Option(item.name,value));$(id).value=garage.profile[id];$(id).onchange=()=>{garage.select(id,$(id).value);describe();};}
 function describe(){renderCampaignWeapons($('garageCampaignWeapons'),progression.state);const profile=garage.profile,s=SHIPS[profile.ship];$('spec').textContent=`Blindage ${s.hp} · Vitesse ${s.speed} · Puissance ${s.damage} · Maniabilité ${profile.ship==="wisp"?"vive":profile.ship==="bastion"?"lourde":"équilibrée"}`;$('record').textContent=`Record local : ${profile.best} · Crédits NV2 : ${profile.credits} · Économie inactive`;}
 function resetInput(){keys.clear();target=null;const captured=activePointer;activePointer=null;if(captured!==null&&canvas.hasPointerCapture(captured))canvas.releasePointerCapture(captured);const run=session.run;if(run){run.vx=0;run.vy=0;takeEvents(run);}clock.reset();cj.suspend();}
-function foreground(){return !orientationBlocked&&!document.hidden&&document.hasFocus();}
+function foreground(){return !persistence.blocked&&!orientationBlocked&&!document.hidden&&document.hasFocus();}
 function active(){return session.active(navigation.screen==='combat',foreground());}
 function showStartState(){$('mapLaunch').disabled=!renderer||session.launching;$('start').disabled=!renderer||session.launching;if(renderer&&!session.launching)$('start').innerHTML='ENTRER DANS LA FAILLE <b>↗</b>';if(navigation.screen==='galaxy')galaxy.refresh();}
 async function start(missionId=null,difficulty=preferences.difficulty){
@@ -95,6 +103,10 @@ function orientationChanged(blocked){
  else $('ship').focus({preventScroll:true});
 }
 const portraitGuard=createPortraitGuard(orientationChanged);
+stopForStorage=()=>{campaignOptions.close();suspend();};
 describe();$('start').disabled=true;$('start').textContent='PRÉPARATION DU VOL…';const images=await loadAssets(ASSETS),missing=Object.entries(images).filter(([,i])=>!i).map(([id])=>id);if(missing.length){$('status').textContent='Assets indisponibles : '+missing.join(', ')+'. Rechargez la page.';}else{renderer=createRenderer(canvas,images);showStartState();$('start').innerHTML='ENTRER DANS LA FAILLE <b>↗</b>';}
 // Diagnostic en lecture seule, sans raccourci de gameplay ni écriture de sauvegarde.
 Object.defineProperty(window,'nv2Diagnostics',{value:()=>{const run=session.run,paused=session.paused;return {threats:run?.nexus?run.enemies.map(e=>({id:e.id,type:e.type,breaker:!!e.breaker,x:e.x,y:e.y,hp:e.hp,bomber:e.defenseBomber?{...e.defenseBomber}:null,warning:e.warning?{...e.warning}:null})):[],campaignWeapons:session.missionId&&run?campaignRunWeaponIds(run):null,missionId:session.missionId,mission:session.missionId&&run?nexusMissionState(run):null,nexus:run?.nexus?.state,progress:progression.diagnostics,screen:navigation.screen,orientationBlocked:portraitGuard.blocked,galaxy:galaxy.diagnostics,launching:session.launching,active:active(),paused,over:run?.over,victory:run?.victory,time:run?.t,hp:run?.hp,ship:run?.loadout.ship,weapon:run?.loadout.weapon,novaCharge:run?.novaCharge,novaUses:run?.stats.novaUses,ending:!!run?.ending,bossPhase:run?.enemies.find(e=>e.boss)?.phase,warningCount:run?.enemies.filter(e=>e.warning).length,velocity:run?{x:run.vx,y:run.vy}:null,stats:run?{...run.stats,bossPhases:[...run.stats.bossPhases]}:null,position:run?{x:run.x,y:run.y}:null,bounds:run?{width:run.width,height:run.height}:null,difficulty:run?.loadout.difficulty||preferences.difficulty,audio:audio.diagnostics(),counts:run?Object.fromEntries(['bullets','hostile','enemies','effects','particles'].map(k=>[k,run[k].length])):{},render:renderer?.metrics(),missing};}});
+
+}
+boot().catch(error=>{document.querySelector('main').inert=true;const status=document.getElementById('status');status.textContent='Sauvegarde indisponible ou incompatible ('+(error.code||'storage-unavailable')+'). Fermez les anciens onglets et rechargez. Aucune réinitialisation effectuée.';status.setAttribute('role','alert');});

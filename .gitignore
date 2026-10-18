@@ -18,3 +18,7 @@
 !/tests/release.test.js
 /tools/*
 !/tools/serve.js
+
+!/tests/persistence-browser.cjs
+!/tests/persistence-m01-regression.cjs
+!/tests/persistence-ambre-regression.cjs
